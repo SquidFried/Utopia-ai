@@ -58,15 +58,15 @@ jobs:
                     history.push({role: "user", content: text});
 
                     appendMsg('Думаю...', 'bot', true);
-                        try {
-                            const searchRes = await fetch(`https://pollinations.ai{encodeURIComponent(text)}`);
+                                                try {
+                            const searchRes = await fetch(`https://duckduckgo.com...`);
                             if (searchRes.ok) {
-                                webContext = await searchRes.text();
+                                const html = await searchRes.text();
+                                const matches = html.match(/.../);
+                                if (matches) webContext = ...;
                             }
-                        } catch(se) { console.log("Ошибка бесцензурного поиска"); }
+                        } catch(se) { console.log("Поиск временно недоступен"); }
                         
-
-                        const response = await fetch('https://pollinations.ai', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
