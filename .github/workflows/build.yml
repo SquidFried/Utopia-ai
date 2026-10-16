@@ -130,6 +130,10 @@ jobs:
       run: |
         npx cap init "Utopia AI" "com.squidfried.utopiaai" --web-dir=www
         npx cap add android
+                MANIFEST="android/app/src/main/AndroidManifest.xml"
+        sed -i '/<application/i \    <uses-permission android:name="android.permission.INTERNET" />' $MANIFEST
+        sed -i '/<application/i \    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />' $MANIFEST
+        
     - name: Setup Custom Icon
       run: |
         if [ -f "icon.png" ]; then
