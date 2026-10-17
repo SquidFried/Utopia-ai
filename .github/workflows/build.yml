@@ -375,12 +375,10 @@ jobs:
               const dialogContent = document.getElementById('dialog-content');
               const dialogActions = document.getElementById('dialog-actions');
 
-              const API_URL =
-                'https://quiet-dawn-09df.buravleva5zx.workers.dev';
+              const API_URL = 'https://quiet-dawn-09df.buravleva5zx.workers.dev';
 
               const STORAGE_KEY = 'utopia_ai_chats_v1';
               const ANDI_MEMORY_KEY = 'utopia_ai_remember_character_v1';
-              const ANDRIALFUS_SYSTEM_PROMPT = `Ты — Андриалфус, сокращённо Анди.
               const ANDRIALFUS_SYSTEM_PROMPT = `Ты — Андриалфус, сокращённо Анди.
 
               ТВОИ ХАРАКТЕРИСТИКИ
