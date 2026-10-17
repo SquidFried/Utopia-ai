@@ -313,7 +313,7 @@ jobs:
               <input
                 type="text"
                 id="msg-input"
-                placeholder="Спроси о чём угодно..."
+                placeholder="Пиши блять!"
                 autocomplete="off"
               >
 
@@ -333,19 +333,19 @@ jobs:
 
                 <div id="menu-popup" hidden>
                   <button class="menu-item" data-action="new">
-                    ➕ Новый чат
+                    🪟 Новое окно
                   </button>
 
                   <button class="menu-item" data-action="history">
-                    💬 История чатов
+                    📖 История языковых окон
                   </button>
 
                   <button class="menu-item" data-action="rename">
-                    ✏️ Переименовать чат
+                    👁️‍🗨️ Изменить название на табло чата
                   </button>
 
                   <button class="menu-item" data-action="clear">
-                    🗑️ Очистить текущий чат
+                    🚨 Удалить наху-
                   </button>
 
                   <button class="menu-item" data-action="settings">
@@ -408,12 +408,12 @@ jobs:
                     })
                   );
                 } catch (error) {
-                  console.error('Не удалось сохранить чаты:', error);
+                  console.error('Чаты пошли по пизде:', error);
                   showDialog(
                     'Ошибка сохранения',
                     'Не удалось сохранить переписки на телефоне. ' +
                     'Возможно, закончилось место в хранилище.',
-                    [{ text: 'Понятно', action: closeDialog }]
+                    [{ text: 'Спасибо👍', action: closeDialog }]
                   );
                 }
               }
@@ -581,10 +581,10 @@ jobs:
                   });
 
                 showDialog(
-                  'История чатов',
+                  'История текстовых окон',
                   list,
                   [{
-                    text: 'Закрыть',
+                    text: 'Нахуй прикрыть',
                     action: closeDialog,
                     secondary: true
                   }]
@@ -606,12 +606,12 @@ jobs:
                   field,
                   [
                     {
-                      text: 'Отмена',
+                      text: 'Бля🥺',
                       action: closeDialog,
                       secondary: true
                     },
                     {
-                      text: 'Сохранить',
+                      text: 'Закрепить результат',
                       action: () => {
                         const title = field.value.trim();
 
@@ -635,17 +635,17 @@ jobs:
 
               function clearChat() {
                 showDialog(
-                  'Очистить чат?',
+                  'Ну нееет🥺',
                   'Все сообщения текущего чата будут удалены. ' +
                   'Сам чат останется в истории.',
                   [
                     {
-                      text: 'Отмена',
+                      text: 'Нееет!',
                       action: closeDialog,
                       secondary: true
                     },
                     {
-                      text: 'Очистить',
+                      text: 'Да блять!',
                       action: () => {
                         const selected = currentChat();
 
@@ -666,10 +666,10 @@ jobs:
               function openSettings() {
                 showDialog(
                   'Настройки',
-                  'Дополнительные настройки пока в разработке. ' +
+                  'Жди блять. ' +
                   'Позже здесь появятся настройки интерфейса и другие функции.',
                   [{
-                    text: 'Закрыть',
+                    text: 'Нахуй.',
                     action: closeDialog,
                     secondary: true
                   }]
@@ -743,7 +743,7 @@ jobs:
 
                 if (!appToken) {
                   appendMsg(
-                    'Сначала введи токен доступа Utopia AI в поле сверху.',
+                    'Где токен доступа Utopia AI блять?!',
                     'error'
                   );
                   keyInput.focus();
@@ -771,7 +771,7 @@ jobs:
                 saveChats();
                 renderChat();
 
-                const loading = appendMsg('Думаю…', 'bot');
+                const loading = appendMsg('Я думаю блять…', 'bot');
 
                 try {
                   const response = await fetch(API_URL, {
@@ -852,7 +852,7 @@ jobs:
                   console.error('Utopia AI request failed:', error);
 
                   appendMsg(
-                    'Не удалось получить ответ: ' +
+                    'Нет ответа🤷😥: ' +
                     (error && error.message
                       ? error.message
                       : 'неизвестная ошибка') +
