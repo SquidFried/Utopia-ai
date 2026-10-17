@@ -37,7 +37,7 @@ jobs:
               }
               #key-area { padding: 10px; background: #191919; border-bottom: 1px solid #303030; }
               #key-label { display: block; font-size: 12px; color: #bbb; margin: 0 0 6px 2px; }
-              #api-key {
+              #app-token {
                 width: 100%; background: #2d2d2d; border: 1px solid #444; padding: 11px;
                 border-radius: 8px; color: #fff; font-size: 14px; outline: none;
               }
@@ -70,14 +70,14 @@ jobs:
           </head>
           <body>
             <div id="key-area">
-              <label id="key-label" for="api-key">API-ключ Pollinations</label>
-              <input id="api-key" type="password" autocomplete="off" autocapitalize="off"
-                     spellcheck="false" placeholder="Вставь свой API-ключ сюда">
-              <div id="key-note">Ключ хранится только в памяти приложения и не сохраняется. После закрытия приложения его потребуется ввести снова.</div>
+              <label id="key-label" for="app-token">Токен доступа Utopia AI</label>
+              <input id="app-token" type="password" autocomplete="off" autocapitalize="off"
+                     spellcheck="false" placeholder="Вставь токен доступа">
+              <div id="key-note">Токен хранится только в памяти приложения и не сохраняется. После закрытия приложения его потребуется ввести снова.</div>
             </div>
 
             <div id="chat">
-              <div class="msg bot">Привет! Я Utopia AI. Введи API-ключ Pollinations выше, затем задай вопрос.</div>
+              <div class="msg bot">Привет! Я Utopia AI. Введи токен доступа выше, затем задай вопрос.</div>
             </div>
 
             <div id="input-area">
@@ -89,10 +89,9 @@ jobs:
               const chat = document.getElementById('chat');
               const input = document.getElementById('msg-input');
               const btn = document.getElementById('send-btn');
-              const keyInput = document.getElementById('api-key');
+              const keyInput = document.getElementById('app-token');
 
-              const MODEL = 'community/SquidFried/utopia-ai';
-              const API_URL = 'https://gen.pollinations.ai/v1/chat/completions';
+              const API_URL = 'https://quiet-dawn-09df.buravleva5zx.workers.dev';
 
               let history = [];
               let isSending = false;
@@ -110,13 +109,13 @@ jobs:
                 if (isSending) return;
 
                 const text = input.value.trim();
-                const apiKey = keyInput.value.trim();
+                const appToken = keyInput.value.trim();
 
                 if (!text) return;
 
-                if (!apiKey) {
+                if (!appToken) {
                   appendMsg(
-                    'Сначала введи свой API-ключ Pollinations в поле сверху.',
+                    'Сначала введи токен доступа Utopia AI в поле сверху.',
                     'error'
                   );
                   keyInput.focus();
@@ -137,11 +136,10 @@ jobs:
                   const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: {
-                      'Authorization': 'Bearer ' + apiKey,
+                      'X-App-Token': appToken,
                       'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                      model: MODEL,
                       messages: history
                     })
                   });
@@ -205,7 +203,7 @@ jobs:
                     (error && error.message
                       ? error.message
                       : 'неизвестная ошибка') +
-                    '\n\nПроверь интернет, API-ключ и доступность модели.',
+                    '\n\nПроверь интернет, токен доступа и доступность сервера Utopia AI.',
                     'error'
                   );
 
