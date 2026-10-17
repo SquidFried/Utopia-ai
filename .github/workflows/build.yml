@@ -120,7 +120,6 @@ jobs:
                 align-items: stretch;
                 box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
               }
-
               #msg-input {
                 flex: 1;
                 min-width: 0;
@@ -240,7 +239,6 @@ jobs:
                 flex-direction: column;
                 gap: 8px;
               }
-
               .chat-entry {
                 width: 100%;
                 background: #2d2d2d;
@@ -390,7 +388,6 @@ jobs:
                 return Date.now().toString(36) +
                   Math.random().toString(36).slice(2, 9);
               }
-
               function makeChat() {
                 return {
                   id: makeId(),
@@ -550,7 +547,6 @@ jobs:
 
               function openHistory() {
                 const list = document.createElement('div');
-
                 if (!chats.length) {
                   list.textContent = 'Сохранённых чатов пока нет.';
                 }
@@ -657,4 +653,291 @@ jobs:
                           selected.messages = [];
                           selected.updatedAt = Date.now();
                           saveChats();
-                     
+                        }
+
+                        closeDialog();
+                        renderChat();
+                      }
+                    }
+                  ]
+                );
+              }
+
+              function openSettings() {
+                showDialog(
+                  'Настройки',
+                  'Дополнительные настройки пока в разработке. ' +
+                  'Позже здесь появятся настройки интерфейса и другие функции.',
+                  [{
+                    text: 'Закрыть',
+                    action: closeDialog,
+                    secondary: true
+                  }]
+                );
+              }
+
+              menuBtn.addEventListener('click', () => {
+                toggleMenu();
+              });
+
+              document.addEventListener('click', event => {
+                if (!event.target.closest('#menu-wrap')) {
+                  toggleMenu(false);
+                }
+              });
+
+             menuPopup.addEventListener('click', event => {
+                const button = event.target.closest('[data-action]');
+                if (!button) return;
+
+                toggleMenu(false);
+
+                switch (button.dataset.action) {
+                  case 'new':
+                    createNewChat();
+                    break;
+
+                  case 'history':
+                    openHistory();
+                    break;
+
+                  case 'rename':
+                    renameChat();
+                    break;
+
+                  case 'clear':
+                    clearChat();
+                    break;
+
+                  case 'settings':
+                    openSettings();
+                    break;
+                }
+              });
+
+              overlay.addEventListener('click', event => {
+                if (event.target === overlay) {
+                  closeDialog();
+                }
+              });
+
+              sendBtn.addEventListener('click', send);
+
+              input.addEventListener('keydown', event => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  send();
+                }
+              });
+
+              async function send() {
+                if (isSending) return;
+
+                const text = input.value.trim();
+                const appToken = keyInput.value.trim();
+                const selected = currentChat();
+
+                if (!text) return;
+
+                if (!selected) return;
+
+                if (!appToken) {
+                  appendMsg(
+                    'Сначала введи токен доступа Utopia AI в поле сверху.',
+                    'error'
+                  );
+                  keyInput.focus();
+                  return;
+                }
+
+                isSending = true;
+                input.value = '';
+                input.disabled = true;
+                sendBtn.disabled = true;
+
+                const userMessage = {
+                  role: 'user',
+                  content: text
+                };
+
+                selected.messages.push(userMessage);
+
+                if (selected.title === 'Новый чат') {
+                  selected.title = text.slice(0, 40) +
+                    (text.length > 40 ? '…' : '');
+                }
+
+                selected.updatedAt = Date.now();
+                saveChats();
+                renderChat();
+
+                const loading = appendMsg('Думаю…', 'bot');
+
+                try {
+                  const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                      'X-App-Token': appToken,
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      messages: selected.messages.map(message => ({
+                        role: message.role,
+                        content: message.content
+                      }))
+                    })
+                  });
+
+                  const rawBody = await response.text();
+                  let data;
+
+                  try {
+                    data = JSON.parse(rawBody);
+                  } catch (_) {
+                    throw new Error(
+                      'Сервер вернул непонятный ответ (HTTP ' +
+                      response.status + ').'
+                    );
+                  }
+
+                  if (!response.ok) {
+                    const apiMessage =
+                      (data && data.error &&
+                        (data.error.message || data.error)) ||
+                      (data && data.message) ||
+                      ('HTTP ' + response.status);
+
+                    throw new Error(String(apiMessage));
+                  }
+
+                  const reply = data &&
+                    data.choices &&
+                    data.choices[0] &&
+                    data.choices[0].message &&
+                    data.choices[0].message.content;
+
+                  if (typeof reply !== 'string' || !reply.trim()) {
+                    throw new Error(
+                      'API ответил, но текст ответа отсутствует.'
+                    );
+                  }
+
+                  loading.remove();
+
+                  selected.messages.push({
+                    role: 'assistant',
+                    content: reply.trim()
+                  });
+
+                  selected.updatedAt = Date.now();
+                  saveChats();
+                  renderChat();
+
+                } catch (error) {
+                  loading.remove();
+
+                  const lastMessage = selected.messages[
+                    selected.messages.length - 1
+                  ];
+
+                  if (
+                    lastMessage &&
+                    lastMessage.role === 'user' &&
+                    lastMessage.content === text
+                  ) {
+                    selected.messages.pop();
+                    saveChats();
+                  }
+
+                  console.error('Utopia AI request failed:', error);
+
+                  appendMsg(
+                    'Не удалось получить ответ: ' +
+                    (error && error.message
+                      ? error.message
+                      : 'неизвестная ошибка') +
+                      +
+                    '\n\nПроверь интернет, токен доступа и доступность сервера Utopia AI.',
+                    'error'
+                  );
+
+                } finally {
+                  isSending = false;
+                  input.disabled = false;
+                  sendBtn.disabled = false;
+                  input.focus();
+                }
+              }
+
+              loadChats();
+              renderChat();
+            </script>
+          </body>
+          </html>
+          EOF
+
+          cat << 'EOF' > package.json
+          {
+            "name": "utopia-ai",
+            "version": "1.0.0",
+            "private": true,
+            "dependencies": {
+              "@capacitor/core": "^6.0.0",
+              "@capacitor/cli": "^6.0.0",
+              "@capacitor/android": "^6.0.0"
+            }
+          }
+          EOF
+
+          cat << 'EOF' > capacitor.config.json
+          {
+            "appId": "com.squidfried.utopiaai",
+            "appName": "Utopia AI",
+            "webDir": "www"
+          }
+          EOF
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Initialize Capacitor Android
+        run: |
+          npx cap init "Utopia AI" "com.squidfried.utopiaai" --web-dir=www
+          npx cap add android
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          sed -i '/<application/i \    <uses-permission android:name="android.permission.INTERNET" />' "$MANIFEST"
+          sed -i '/<application/i \    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />' "$MANIFEST"
+
+      - name: Setup Custom Icon
+        run: |
+          if [ -f "icon.png" ]; then
+            mkdir -p android/app/src/main/res/mipmap-mdpi
+            cp icon.png android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+            cp icon.png android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
+          fi
+
+      - name: Setup Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Android SDK Path
+        run: |
+          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> "$GITHUB_ENV"
+          echo "ANDROID_COMMANDLINE_TOOLS_HOME=/usr/local/lib/android/sdk/cmdline-tools/latest" >> "$GITHUB_ENV"
+
+      - name: Accept Android SDK Licenses
+        run: yes | sdkmanager --licenses || echo "Licenses handled"
+
+      - name: Compile Personal APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Export Ready App File
+        uses: actions/upload-artifact@v4
+        with:
+          name: utopia-app
+          path: android/app/build/outputs/apk
