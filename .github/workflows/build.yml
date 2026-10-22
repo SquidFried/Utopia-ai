@@ -120,6 +120,20 @@ jobs:
                 align-items: stretch;
                 box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
               }
+
+              #mode-select {
+                flex: 0 0 auto;
+                min-width: 78px;
+                max-width: 96px;
+                background: #2d2d2d;
+                border: 1px solid #444;
+                border-radius: 8px;
+                color: #fff;
+                padding: 0 5px;
+                font-size: 13px;
+                outline: none;
+              }
+
               #msg-input {
                 flex: 1;
                 min-width: 0;
@@ -239,6 +253,7 @@ jobs:
                 flex-direction: column;
                 gap: 8px;
               }
+
               .chat-entry {
                 width: 100%;
                 background: #2d2d2d;
@@ -310,6 +325,11 @@ jobs:
             <div id="chat"></div>
 
             <div id="input-area">
+              <select id="mode-select" aria-label="Режим общения">
+                <option value="andi">Анди</option>
+                <option value="model">Модель</option>
+              </select>
+
               <input
                 type="text"
                 id="msg-input"
@@ -366,6 +386,7 @@ jobs:
             <script>
               const chatElement = document.getElementById('chat');
               const input = document.getElementById('msg-input');
+              const modeSelect = document.getElementById('mode-select');
               const sendBtn = document.getElementById('send-btn');
               const keyInput = document.getElementById('app-token');
               const menuBtn = document.getElementById('menu-btn');
@@ -379,6 +400,8 @@ jobs:
 
               const STORAGE_KEY = 'utopia_ai_chats_v1';
               const ANDI_MEMORY_KEY = 'utopia_ai_remember_character_v1';
+              const MODE_KEY = 'utopia_ai_mode_v1';
+
               const ANDRIALFUS_SYSTEM_PROMPT = `
               Ты — Андриалфус, сокращённо Анди. Тебе 17 лет.
 
@@ -492,6 +515,7 @@ jobs:
                 return Date.now().toString(36) +
                   Math.random().toString(36).slice(2, 9);
               }
+
               function makeChat() {
                 return {
                   id: makeId(),
@@ -736,7 +760,6 @@ jobs:
                 field.focus();
                 field.select();
               }
-
               function clearChat() {
                 showDialog(
                   'Ну нееет🥺',
@@ -767,7 +790,7 @@ jobs:
                 );
               }
 
-                            function openSettings() {
+              function openSettings() {
                 const rememberCharacter =
                   localStorage.getItem(ANDI_MEMORY_KEY) !== 'false';
 
@@ -822,7 +845,7 @@ jobs:
                 }
               });
 
-             menuPopup.addEventListener('click', event => {
+              menuPopup.addEventListener('click', event => {
                 const button = event.target.closest('[data-action]');
                 if (!button) return;
 
@@ -855,6 +878,16 @@ jobs:
                 if (event.target === overlay) {
                   closeDialog();
                 }
+              });
+
+              modeSelect.value = localStorage.getItem(MODE_KEY) || 'andi';
+
+              if (!['andi', 'model'].includes(modeSelect.value)) {
+                modeSelect.value = 'andi';
+              }
+
+              modeSelect.addEventListener('change', () => {
+                localStorage.setItem(MODE_KEY, modeSelect.value);
               });
 
               sendBtn.addEventListener('click', send);
@@ -916,9 +949,10 @@ jobs:
                       'X-App-Token': appToken,
                       'Content-Type': 'application/json'
                     },
-                                        body: JSON.stringify({
+                    body: JSON.stringify({
                       messages: [
-                        ...(localStorage.getItem(ANDI_MEMORY_KEY) !== 'false'
+                        ...(modeSelect.value === 'andi' &&
+                          localStorage.getItem(ANDI_MEMORY_KEY) !== 'false'
                           ? [{
                               role: 'system',
                               content: ANDRIALFUS_SYSTEM_PROMPT
@@ -1000,7 +1034,6 @@ jobs:
                     (error && error.message
                       ? error.message
                       : 'неизвестная ошибка') +
-                      +
                     '\n\nПроверь интернет, токен доступа и доступность сервера Utopia AI.',
                     'error'
                   );
@@ -1039,9 +1072,7 @@ jobs:
             "appName": "Utopia AI",
             "webDir": "www"
           }
-          EOF
-
-      - name: Install dependencies
+          - name: Install dependencies
         run: npm install
 
       - name: Initialize Capacitor Android
@@ -1085,3 +1116,4 @@ jobs:
         with:
           name: utopia-app
           path: android/app/build/outputs/apk
+          EOF
