@@ -1072,6 +1072,8 @@ jobs:
             "appName": "Utopia AI",
             "webDir": "www"
           }
+          EOF
+          
           - name: Install dependencies
         run: npm install
 
