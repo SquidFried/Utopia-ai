@@ -1073,9 +1073,9 @@ jobs:
             "webDir": "www"
           }
           EOF
-          
-          - name: Install dependencies
-            run: npm install
+
+      - name: Install dependencies
+        run: npm install
 
       - name: Initialize Capacitor Android
         run: |
