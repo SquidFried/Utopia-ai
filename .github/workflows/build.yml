@@ -1116,4 +1116,3 @@ jobs:
         with:
           name: utopia-app
           path: android/app/build/outputs/apk
-          EOF
