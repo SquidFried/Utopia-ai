@@ -1022,7 +1022,7 @@ jobs:
                     lastMessage &&
                     lastMessage.role === 'user' &&
                     lastMessage.content === text
-                   {
+                  ) {
                     selected.messages.pop();
                     saveChats();
                   }
